@@ -69,9 +69,19 @@
   
   @media (max-width: 640px) {
     #cart-panel {
-      max-width: 100%;
-      width: 100%;
+      width: 90%;
+      max-width: 320px;
+      height: auto;
+      max-height: 85vh;
+      left: 50%;
+      right: auto;
+      top: 50%;
+      transform: translate(-50%, -50%) translateX(100%);
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     }
+    #cart-panel.hidden-panel { transform: translate(-50%, -50%) translateX(100%); }
+    #cart-panel.visible-panel { transform: translate(-50%, -50%) translateX(0); }
   }
 
   /* Overlay */
@@ -288,7 +298,7 @@
   </div>
   <script>
 // ─── DATA ─────────────────────────────────────────────────────────────────
-const WA_NUMBER = "";
+const WA_NUMBER = "+628123456789";
 
 const ALLERGEN_MAP = {
   gluten: ["Gluten","Gluten"],
@@ -982,5 +992,5 @@ if (window.elementSdk) {
 // ─── BOOTSTRAP ────────────────────────────────────────────────────────────
 init();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ed2c2b054a249f3',t:'MTc3NjMzODAwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ed3840c3420daa5',t:'MTc3NjM0NTkyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
