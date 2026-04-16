@@ -1,0 +1,1009 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FOX DELI – Digital Menu</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&amp;family=DM+Sans:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+  :root {
+    --bg: #abe0e4;
+    --surface: #ffffff;
+    --text: #1a2e35;
+    --accent: #2a7f8a;
+    --action: #e05c2a;
+    --action2: #5b3a8e;
+  }
+  html, body { height: 100%; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+  }
+  h1, h2, h3, .brand {
+    font-family: 'Playfair Display', serif;
+  }
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+  /* Category pill active */
+  .cat-pill.active {
+    background-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(42,127,138,0.35);
+  }
+  .cat-pill {
+    transition: all .2s ease;
+    white-space: nowrap;
+  }
+  .cat-pill:hover { background-color: var(--accent); color: #fff; }
+
+  /* Card hover */
+  .menu-card {
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .menu-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+  }
+
+  /* Cart slide */
+  #cart-panel {
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+    max-height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100%;
+  }
+  #cart-panel.hidden-panel { transform: translateX(100%); }
+  #cart-panel.visible-panel { transform: translateX(0); }
+  
+  @media (max-width: 640px) {
+    #cart-panel {
+      width: 90%;
+      max-width: 320px;
+      height: auto;
+      max-height: 85vh;
+      left: 50%;
+      right: auto;
+      top: 50%;
+      transform: translate(-50%, -50%) translateX(100%);
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    #cart-panel.hidden-panel { transform: translate(-50%, -50%) translateX(100%); }
+    #cart-panel.visible-panel { transform: translate(-50%, -50%) translateX(0); }
+  }
+
+  /* Overlay */
+  #cart-overlay {
+    transition: opacity .3s ease;
+  }
+
+  /* Modal */
+  #option-modal {
+    transition: opacity .2s ease;
+  }
+
+  /* Badge pulse */
+  @keyframes badge-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+  }
+  .badge-pop { animation: badge-pop .3s ease; }
+
+  /* Hero gradient */
+  .hero-gradient {
+    background: linear-gradient(135deg, #0d4f58 0%, #1a7a88 50%, #2a9aaa 100%);
+  }
+
+  /* Allergen tag */
+  .allergen-tag {
+    font-size: 10px;
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+
+  /* Price color */
+  .price-text { color: var(--action); font-weight: 600; }
+
+  .section-hidden { display: none !important; }
+
+  /* Sticky header shadow */
+  .sticky-header {
+    backdrop-filter: blur(10px);
+    background: rgba(171,224,228,0.92);
+  }
+
+  .btn-action {
+    background-color: var(--action);
+    color: #fff;
+    transition: background .2s;
+  }
+  .btn-action:hover { background-color: #c44f22; }
+
+  .btn-accent {
+    background-color: var(--accent);
+    color: #fff;
+    transition: background .2s;
+  }
+  .btn-accent:hover { background-color: #1f6570; }
+
+  .qty-btn {
+    background: var(--bg);
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    border-radius: 50%;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; cursor: pointer;
+    transition: all .15s;
+  }
+  .qty-btn:hover { background: var(--accent); color: #fff; }
+
+  /* Radio custom */
+  .opt-radio { display: none; }
+  .opt-label {
+    cursor: pointer;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1.5px solid #ccc;
+    font-size: 13px;
+    transition: all .15s;
+    user-select: none;
+  }
+  .opt-radio:checked + .opt-label {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* Toast */
+  #toast {
+    transition: opacity .3s, transform .3s;
+  }
+
+  /* Modal wrapper fix - centered on all devices */
+  #option-modal {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    padding: 16px;
+    background: rgba(0,0,0,0.5);
+  }
+  #option-modal.hidden {
+    display: none !important;
+  }
+  #option-modal > div {
+    max-height: 75vh;
+    width: 100%;
+    max-width: 24rem;
+    border-radius: 1.5rem;
+    overflow-y: auto;
+    margin: auto;
+  }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full overflow-auto">
+  <!-- ───── STICKY HEADER ───── -->
+  <header class="sticky top-0 z-40 sticky-header shadow-sm">
+   <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+     <!-- Fox logo icon -->
+     <div class="w-10 h-10 rounded-full hero-gradient flex items-center justify-center shadow">
+      <span class="text-white font-black text-sm" style="font-family:'Playfair Display',serif;">FD</span>
+     </div>
+     <div>
+      <div id="header-name" class="brand font-bold text-lg leading-tight" style="color:var(--text)">
+       FOX DELI
+      </div>
+      <div id="header-tagline" class="text-xs" style="color:var(--accent)">
+       Taste the Experience
+      </div>
+     </div>
+    </div><button id="cart-btn" onclick="toggleCart()" class="relative btn-accent rounded-full px-4 py-2 flex items-center gap-2 text-sm font-medium shadow"> <i data-lucide="shopping-bag" style="width:16px;height:16px"></i> <span>Cart</span> <span id="cart-badge" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center hidden">0</span> </button>
+   </div>
+  </header><!-- ───── HERO ───── -->
+  <section class="hero-gradient text-white py-10 px-4 text-center relative overflow-hidden">
+   <div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(circle at 20% 50%, #fff 1px, transparent 1px),radial-gradient(circle at 80% 20%, #fff 1px, transparent 1px); background-size: 40px 40px;"></div>
+   <div class="relative max-w-xl mx-auto">
+    <p class="text-xs uppercase tracking-widest opacity-70 mb-1">Welcome to</p>
+    <h1 id="hero-name" class="text-4xl md:text-5xl font-black mb-2" style="font-family:'Playfair Display',serif; letter-spacing:-1px;">FOX DELI</h1>
+    <p id="hero-tagline" class="text-sm opacity-80 mb-4">Taste the Experience</p>
+    <div class="flex items-center justify-center gap-4 text-xs opacity-70">
+     <span class="flex items-center gap-1"><i data-lucide="clock" style="width:12px;height:12px"></i> Open Daily</span> <span class="flex items-center gap-1"><i data-lucide="wifi" style="width:12px;height:12px"></i> Free WiFi</span> <span class="flex items-center gap-1"><i data-lucide="map-pin" style="width:12px;height:12px"></i> Dine-in &amp; Room Service</span>
+    </div>
+   </div>
+  </section><!-- ───── CATEGORY PILLS ───── -->
+  <div class="sticky top-[61px] z-20 py-3 px-2" style="background:var(--bg)">
+   <div class="flex gap-2 overflow-x-auto pb-1 px-2 max-w-6xl mx-auto" id="cat-strip">
+    <!-- pills injected by JS -->
+   </div>
+  </div><!-- ───── MENU SECTIONS ───── -->
+  <main class="max-w-6xl mx-auto px-3 pb-32" id="menu-root">
+   <!-- Menu injected here -->
+  </main><!-- ───── CART OVERLAY ───── -->
+  <div id="cart-overlay" class="fixed inset-0 z-30 bg-black bg-opacity-50 hidden" onclick="toggleCart()"></div><!-- ───── CART PANEL ───── -->
+  <aside id="cart-panel" class="fixed top-0 right-0 h-full z-40 w-full max-w-sm bg-white shadow-2xl flex flex-col hidden-panel" style="overflow:hidden;">
+   <div class="flex items-center justify-between px-5 py-4 border-b" style="background:var(--accent)">
+    <h2 class="text-white font-bold text-lg flex items-center gap-2"><i data-lucide="shopping-bag" style="width:18px;height:18px"></i> Your Order</h2><button onclick="toggleCart()" class="text-white opacity-80 hover:opacity-100"><i data-lucide="x" style="width:22px;height:22px"></i></button>
+   </div><!-- Location / note -->
+   <div class="px-4 pt-4 pb-2">
+    <label class="block text-xs font-semibold mb-1" style="color:var(--accent)">📍 Your Location <span class="text-red-500">*Required</span></label>
+    <div class="flex gap-2 mb-2">
+     <label class="flex-1 flex items-center gap-2 border-2 rounded-xl p-2.5 cursor-pointer transition" id="loc-table-wrap"> <input type="radio" name="location_type" value="table" id="loc-table" onchange="updateLocationUI()" class="accent-teal-600">
+      <div>
+       <div class="text-xs font-semibold">
+        🪑 Dine-in Table
+       </div>
+       <div class="text-xs text-gray-500">
+        Fox Deli area
+       </div>
+      </div></label> <label class="flex-1 flex items-center gap-2 border-2 rounded-xl p-2.5 cursor-pointer transition" id="loc-room-wrap"> <input type="radio" name="location_type" value="room" id="loc-room" onchange="updateLocationUI()" class="accent-teal-600">
+      <div>
+       <div class="text-xs font-semibold">
+        🛏️ Room Service
+       </div>
+       <div class="text-xs text-gray-500">
+        Deliver to room
+       </div>
+      </div></label>
+    </div><input id="location-detail" type="text" placeholder="e.g. Table 5 / Room 302" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500" style="border-color:#ccc">
+   </div><!-- Guest name -->
+   <div class="px-4 pb-2">
+    <label class="block text-xs font-semibold mb-1" style="color:var(--accent)">👤 Guest Name <span class="text-red-500">*Required</span></label> <input id="guest-name" type="text" placeholder="Your name" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500" style="border-color:#ccc">
+   </div><!-- Notes -->
+   <div class="px-4 pb-3">
+    <label class="block text-xs font-semibold mb-1" style="color:var(--accent)">📝 Additional Notes</label> <textarea id="order-notes" rows="2" placeholder="Any special requests?" class="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-teal-500 resize-none" style="border-color:#ccc"></textarea>
+   </div><!-- Cart items -->
+   <div id="cart-items" class="flex-1 overflow-y-auto px-4 space-y-3">
+    <div id="cart-empty" class="flex flex-col items-center justify-center py-12 opacity-50">
+     <i data-lucide="shopping-bag" style="width:48px;height:48px;stroke:var(--accent)"></i>
+     <p class="mt-3 text-sm">Your cart is empty</p>
+    </div>
+   </div><!-- Total + Checkout -->
+   <div class="border-t px-4 py-4 bg-gray-50">
+    <div class="flex justify-between items-center mb-3">
+     <span class="font-semibold text-sm">Total</span> <span id="cart-total" class="font-bold text-lg price-text">Rp 0</span>
+    </div><button onclick="checkout()" class="w-full btn-action rounded-xl py-3 font-bold text-sm flex items-center justify-center gap-2 shadow"> <i data-lucide="message-circle" style="width:18px;height:18px"></i> Order via WhatsApp </button>
+    <p class="text-center text-xs text-gray-400 mt-2">You'll be redirected to WhatsApp to confirm</p>
+   </div>
+  </aside><!-- ───── OPTION MODAL ───── -->
+  <div id="option-modal" class="fixed inset-0 z-50 justify-end md:justify-center p-0 md:p-4 hidden" style="background:rgba(0,0,0,0.5)">
+   <div class="bg-white w-full max-w-md rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl flex flex-col" style="max-height:85vh;margin-top:auto;@media(min-width:768px){margin-top:0}">
+    <div class="flex items-center justify-between px-5 py-4 border-b flex-shrink-0">
+     <h3 id="modal-title" class="font-bold text-base" style="font-family:'Playfair Display',serif;color:var(--text)">Customize Order</h3><button onclick="closeModal()" class="opacity-50 hover:opacity-100"><i data-lucide="x" style="width:22px;height:22px"></i></button>
+    </div>
+    <div id="modal-body" class="overflow-y-auto px-5 py-4 flex-1" style="min-height:0"></div>
+    <div class="px-5 pb-5 pt-3 border-t flex-shrink-0">
+     <div class="flex items-center gap-3 mb-3">
+      <span class="text-sm font-semibold text-gray-600">Qty</span>
+      <div class="qty-btn" onclick="changeModalQty(-1)">
+       −
+      </div><span id="modal-qty" class="font-bold w-6 text-center">1</span>
+      <div class="qty-btn" onclick="changeModalQty(1)">
+       +
+      </div><span id="modal-price" class="ml-auto font-bold text-base price-text"></span>
+     </div><button onclick="addToCartFromModal()" class="w-full btn-action rounded-xl py-3 font-bold text-sm shadow">Add to Cart</button>
+    </div>
+   </div>
+  </div><!-- ───── TOAST ───── -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-60 bg-gray-900 text-white text-sm px-5 py-3 rounded-full shadow-lg opacity-0 pointer-events-none" style="transform:translateX(-50%) translateY(10px)">
+   Added to cart!
+  </div>
+  <script>
+// ─── DATA ─────────────────────────────────────────────────────────────────
+const WA_NUMBER = "";
+
+const ALLERGEN_MAP = {
+  gluten: ["Gluten","Gluten"],
+  dairy: ["Dairy","Susu"],
+  egg: ["Egg","Telur"],
+  nuts: ["Tree Nuts","Kacang Pohon"],
+  peanuts: ["Peanuts","Kacang Tanah"],
+  fish: ["Fish","Ikan"],
+  shellfish: ["Shellfish","Kerang"],
+  soy: ["Soy","Kedelai"],
+  sesame: ["Sesame","Wijen"],
+  wheat: ["Wheat","Gandum"],
+};
+
+const LANG = (navigator.language || "en").startsWith("id") ? "id" : "en";
+const L = (k) => ALLERGEN_MAP[k] ? ALLERGEN_MAP[k][LANG === "id" ? 1 : 0] : k;
+
+const CATEGORIES = [
+  { id: "all", label: LANG==="id"?"Semua":"All" },
+  { id: "heavy", label: "Heavy Meal" },
+  { id: "snack", label: "Snack" },
+  { id: "pastry", label: "Pastry" },
+  { id: "dessert", label: "Dessert" },
+  { id: "beverage", label: "Beverage" },
+  { id: "softdrink", label: "Soft Drink" },
+  { id: "addons", label: "Add-ons" },
+];
+
+const ALLERGEN_DATA = {
+  "Bebek Betutu": ["egg","gluten"],
+  "Nasi Rendang": ["dairy","gluten"],
+  "Ayam Kungpao": ["gluten","soy","peanuts"],
+  "Ayam Kari": ["dairy","gluten"],
+  "Ayam Woku": ["gluten"],
+  "Tuna Cabe Ijo": ["fish","gluten"],
+  "Baso Sapi Bihun": ["gluten","egg"],
+  "Nasi Soto Ayam": ["gluten","egg"],
+  "Indomie Telur": ["gluten","egg","soy"],
+  "Cookies": ["gluten","egg","dairy","nuts"],
+  "Pop Mie": ["gluten","soy"],
+  "Jolly Time": ["dairy"],
+  "Kalpa Wafer": ["gluten","dairy","nuts"],
+  "Delfi BAR": ["dairy","gluten","nuts"],
+  "Chitato": ["gluten","dairy"],
+  "FOX Platter": ["gluten","egg","dairy"],
+  "Chicken Wings": ["gluten","egg"],
+  "French Fries": ["gluten"],
+  "Potato Wedges": ["gluten"],
+  "Almond Croissant": ["gluten","dairy","egg","nuts"],
+  "Pistachio Croissant": ["gluten","dairy","egg","nuts"],
+  "Cheese Croissant": ["gluten","dairy","egg"],
+  "Nutella Croissant": ["gluten","dairy","egg","nuts"],
+  "Gourmandise Croissant": ["gluten","dairy","egg"],
+  "Tuna Croissant": ["gluten","dairy","egg","fish"],
+  "Ham&Cheese Croissant": ["gluten","dairy","egg"],
+  "Mini Croissant": ["gluten","dairy","egg"],
+  "Tuna Panini": ["gluten","fish","dairy"],
+  "Martabak Panini": ["gluten","egg","dairy"],
+  "Pudding Chocolate": ["dairy","egg","gluten"],
+  "Pudding Oreo": ["gluten","dairy","egg"],
+  "Cheese Cake": ["gluten","dairy","egg"],
+  "Marmer Slice Cake": ["gluten","dairy","egg"],
+  "Brownies Cake": ["gluten","dairy","egg","nuts"],
+  "Cinnamon Roll": ["gluten","dairy","egg"],
+  "Fruit Cake": ["gluten","dairy","egg","nuts"],
+  "Chocolate": ["dairy"],
+  "Choco Hazelnut": ["dairy","nuts"],
+  "Latte": ["dairy"],
+  "Cappuccino": ["dairy"],
+  "Americano": [],
+  "Espresso": [],
+  "Tea": [],
+  "Strawberry Coco Milk": ["dairy"],
+  "Coca Cola": [],
+  "Root Beer": [],
+  "Ron88": [],
+  "Olatte": [],
+  "Acaraki": [],
+};
+
+function getAllergens(name) {
+  for (const [key, vals] of Object.entries(ALLERGEN_DATA)) {
+    if (name.toLowerCase().includes(key.toLowerCase())) return vals;
+  }
+  return [];
+}
+
+const MENU = [
+  {
+    id: "heavy", title: "Heavy Meal",
+    emoji: "🍽️",
+    desc: LANG==="id"?"Makanan berat pilihan chef kami":"Chef's selected hearty dishes",
+    items: [
+      { name:"Bebek Betutu", price:83000, extra_rice:true },
+      { name:"Nasi Rendang", price:73000, extra_rice:true },
+      { name:"Ayam Kungpao", price:73000, extra_rice:true },
+      { name:"Ayam Kari", price:73000, extra_rice:true },
+      { name:"Ayam Woku", price:73000, extra_rice:true },
+      { name:"Tuna Cabe Ijo", price:73000, extra_rice:true },
+      { name:"Baso Sapi Bihun", price:63000, extra_rice:true },
+      { name:"Nasi Soto Ayam", price:63000, extra_rice:true },
+      { name:"Indomie Telur", price:35000, extra_rice:false },
+    ]
+  },
+  {
+    id: "snack", title: "Snack",
+    emoji: "🍟",
+    desc: LANG==="id"?"Camilan lezat untuk menemani hari":"Delicious bites for any time",
+    items: [
+      { name:"Cookies by Piece", price:22000 },
+      { name:"Cookies by Toples", price:88000 },
+      { name:"Pop Mie Ayam", price:15000 },
+      { name:"Pop Mie Kari Ayam", price:15000 },
+      { name:"Pop Mie Soto", price:15000 },
+      { name:"Jolly Time Bles O Butter", price:40000 },
+      { name:"Jolly Time Fun Mania", price:40000 },
+      { name:"Jolly Time The Big Cheez", price:40000 },
+      { name:"Kalpa Wafer Coklat", price:30000 },
+      { name:"Delfi BAR BAR", price:30000 },
+      { name:"Chitato Sapi Panggang", price:20000 },
+      { name:"Chitato Ayam Bumbu", price:20000 },
+      { name:"Chitato Keju", price:20000 },
+      { name:"Chitato Sapi Bumbu", price:20000 },
+      { name:"Chitato Salmon Teriyaki", price:20000 },
+      { name:"FOX Platter", price:88000 },
+      { name:"Chicken Wings", price:48000 },
+      { name:"French Fries", price:38000 },
+      { name:"Potato Wedges", price:38000 },
+    ]
+  },
+  {
+    id: "pastry", title: "Pastry",
+    emoji: "🥐",
+    desc: LANG==="id"?"Pastri segar dipanggang setiap hari":"Freshly baked pastries daily",
+    items: [
+      { name:"Almond Croissant", price:45000 },
+      { name:"Pistachio Croissant", price:45000 },
+      { name:"Cheese Croissant", price:43000 },
+      { name:"Nutella Croissant", price:43000 },
+      { name:"Gourmandise Croissant", price:43000 },
+      { name:"Tuna Croissant", price:45000 },
+      { name:"Ham&Cheese Croissant", price:43000 },
+      { name:"Mini Croissant", price:38000 },
+      { name:"Tuna Panini", price:43000 },
+      { name:"Martabak Panini", price:43000 },
+    ]
+  },
+  {
+    id: "dessert", title: "Dessert",
+    emoji: "🍰",
+    desc: LANG==="id"?"Penutup manis yang memanjakan":"Sweet endings to delight",
+    items: [
+      { name:"Pudding Chocolate", price:28000 },
+      { name:"Pudding Oreo", price:28000 },
+      { name:"Cheese Cake", price:48000 },
+      { name:"Marmer Slice Cake", price:32000 },
+      { name:"Brownies Cake", price:25000 },
+      { name:"Cinnamon Roll", price:35000 },
+      { name:"Fruit Cake", price:35000 },
+    ]
+  },
+  {
+    id: "beverage", title: "Beverage",
+    emoji: "☕",
+    desc: LANG==="id"?"Minuman pilihan barista terbaik kami":"Handcrafted drinks by our baristas",
+    items: [
+      { name:"Hot/Iced Americano", price:30000, hotice:true, coffee:true, sugar:false },
+      { name:"Espresso", price:30000, hotice:false, coffee:true, sugar:false, no_sugar_opt:true },
+      { name:"Hot/Iced Keep Palm Latte", price:35000, hotice:true, coffee:true, sugar:true },
+      { name:"Hot/Iced Dear Dairy Latte", price:35000, hotice:true, coffee:true, sugar:true },
+      { name:"Hot/Iced Cappuccino", price:35000, hotice:true, coffee:true, sugar:true },
+      { name:"Hot/Iced Cafe Latte", price:35000, hotice:true, coffee:true, sugar:true },
+      { name:"Hot/Iced Hazelnut Latte", price:35000, hotice:true, coffee:true, sugar:true },
+      { name:"Hot/Iced Vanilla Latte", price:35000, hotice:true, coffee:true, sugar:true },
+      { name:"Hot/Iced Chocolate", price:35000, hotice:true, coffee:false, sugar:true },
+      { name:"Hot/Iced Choco Hazelnut", price:35000, hotice:true, coffee:false, sugar:true },
+      { name:"Hot/Iced Catchy Lychee Tea", price:22000, hotice:true, coffee:false, sugar:false },
+      { name:"Hot/Iced Peachy Beachy Tea", price:22000, hotice:true, coffee:false, sugar:false },
+      { name:"Hot/Iced Classic Lemon Tea", price:22000, hotice:true, coffee:false, sugar:false },
+      { name:"Hot/Iced Green Tea", price:22000, hotice:true, coffee:false, sugar:false },
+      { name:"Hot/Iced English Breakfast Tea", price:22000, hotice:true, coffee:false, sugar:false },
+      { name:"Hot/Iced Blackcurrant Tea", price:22000, hotice:true, coffee:false, sugar:false },
+      { name:"Hot/Iced Jasmine Tea", price:22000, hotice:true, coffee:false, sugar:false },
+      { name:"Strawberry Coco Milk", price:25000, hotice:false, coffee:false, sugar:false },
+    ]
+  },
+  {
+    id: "softdrink", title: "Soft Drink",
+    emoji: "🥤",
+    desc: LANG==="id"?"Minuman segar siap sajian":"Refreshing ready-to-serve drinks",
+    items: [
+      { name:"Ron88 Mineral Water", price:15000 },
+      { name:"Olatte Apple", price:25000 },
+      { name:"Olatte Pear", price:25000 },
+      { name:"Olatte Peach", price:25000 },
+      { name:"Acaraki Golden Sparkling", price:22000 },
+      { name:"Coca Cola Original Can", price:15000 },
+      { name:"Root Beer", price:15000 },
+    ]
+  },
+  {
+    id: "addons", title: "Add-ons",
+    emoji: "➕",
+    desc: LANG==="id"?"Tambahan untuk melengkapi pesanan Anda":"Extras to complete your order",
+    items: [
+      { name:"Nasi Putih", price:10000 },
+      { name:"Ice Cube", price:10000 },
+      { name:"Extra Shot Espresso", price:10000 },
+    ]
+  },
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+let cart = [];
+let cartOpen = false;
+let modalItem = null;
+let modalQty = 1;
+let modalOptions = {};
+let activeCategory = "all";
+let cartIdCounter = 0;
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
+function init() {
+  buildCategoryPills();
+  buildMenu();
+  lucide.createIcons();
+}
+
+// ─── BUILD CATEGORY PILLS ─────────────────────────────────────────────────
+function buildCategoryPills() {
+  const strip = document.getElementById("cat-strip");
+  strip.innerHTML = "";
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement("button");
+    btn.className = "cat-pill flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border border-transparent bg-white bg-opacity-60" + (cat.id === "all" ? " active" : "");
+    btn.setAttribute("data-cat", cat.id);
+    btn.textContent = cat.label;
+    btn.onclick = function() { filterCategory(cat.id); };
+    strip.appendChild(btn);
+  });
+}
+
+function filterCategory(id) {
+  activeCategory = id;
+  document.querySelectorAll(".cat-pill").forEach(p => {
+    p.classList.toggle("active", p.getAttribute("data-cat") === id);
+  });
+  document.querySelectorAll(".menu-section").forEach(sec => {
+    const secId = sec.getAttribute("data-section");
+    sec.classList.toggle("section-hidden", id !== "all" && id !== secId);
+  });
+  lucide.createIcons();
+}
+
+// ─── BUILD MENU ───────────────────────────────────────────────────────────
+function fmt(n) { return "Rp " + n.toLocaleString("id-ID"); }
+
+function buildMenu() {
+  const root = document.getElementById("menu-root");
+  root.innerHTML = "";
+  
+  MENU.forEach(function(cat) {
+    const section = document.createElement("section");
+    section.className = "menu-section mt-8";
+    section.setAttribute("data-section", cat.id);
+
+    const header = document.createElement("div");
+    header.className = "flex items-center gap-3 mb-4";
+    header.innerHTML = `<div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-sm" style="background:white">${cat.emoji}</div><div><h2 class="text-xl font-bold" style="font-family:'Playfair Display',serif;color:var(--text)">${cat.title}</h2><p class="text-xs" style="color:var(--accent)">${cat.desc}</p></div>`;
+    section.appendChild(header);
+
+    const grid = document.createElement("div");
+    grid.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4";
+
+    cat.items.forEach(function(item) {
+      const allergens = getAllergens(item.name);
+      const hasOptions = item.hotice || item.coffee || item.sugar || item.extra_rice;
+
+      const card = document.createElement("div");
+      card.className = "menu-card bg-white rounded-2xl overflow-hidden shadow-sm border border-white cursor-pointer";
+      
+      const allergenHTML = allergens.length > 0
+        ? `<div class="flex flex-wrap gap-1 mt-2">${allergens.map(function(a) { return `<span class="allergen-tag">⚠️ ${L(a)}</span>`; }).join("")}</div>`
+        : "";
+
+      const optBadge = hasOptions
+        ? `<span class="text-xs rounded-full px-2 py-0.5" style="background:var(--bg);color:var(--accent)">⚙️ ${LANG==="id"?"Pilihan":"Options"}</span>`
+        : "";
+
+      card.innerHTML = `<div class="p-4"><div class="flex justify-between items-start gap-2"><h3 class="font-semibold text-sm leading-snug" style="color:var(--text);flex:1">${item.name}</h3>${optBadge}</div>${allergenHTML}<div class="flex items-center justify-between mt-3"><span class="price-text text-sm">${fmt(item.price)}</span><button class="w-8 h-8 rounded-full flex items-center justify-center btn-action shadow-sm" type="button"><i data-lucide="plus" style="width:14px;height:14px"></i></button></div></div>`;
+      
+      (function(currentItem) {
+        const clickHandler = function() { openModal(currentItem); };
+        card.addEventListener("click", clickHandler);
+        const btn = card.querySelector("button");
+        if (btn) {
+          btn.addEventListener("click", function(e) {
+            e.stopPropagation();
+            clickHandler();
+          });
+        }
+      })(item);
+      
+      grid.appendChild(card);
+    });
+
+    section.appendChild(grid);
+    root.appendChild(section);
+  });
+  
+  lucide.createIcons();
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────
+function openModal(item) {
+  modalItem = item;
+  modalQty = 1;
+  modalOptions = {};
+
+  document.getElementById("modal-title").textContent = item.name;
+  updateModalPrice();
+
+  const body = document.getElementById("modal-body");
+  body.innerHTML = "";
+
+  const basePrice = document.createElement("div");
+  basePrice.className = "mb-4 text-sm text-gray-500";
+  basePrice.textContent = (LANG==="id"?"Harga dasar: ":"Base price: ") + fmt(item.price);
+  body.appendChild(basePrice);
+
+  if (item.hotice) {
+    const wrap = buildRadioGroup(
+      LANG==="id"?"Pilih Suhu *":"Temperature *",
+      "temp",
+      [{v:"Hot",l:"🔥 Hot"},{v:"Iced",l:"🧊 Iced"}],
+      true
+    );
+    body.appendChild(wrap);
+  }
+
+  if (item.sugar) {
+    const wrap = buildRadioGroup(
+      LANG==="id"?"Tingkat Gula":"Sugar Level",
+      "sugar",
+      [
+        {v:"No Sugar",l:(LANG==="id"?"Tanpa Gula":"No Sugar")},
+        {v:"Less",l:(LANG==="id"?"Sedikit":"Less")},
+        {v:"Normal",l:"Normal"},
+        {v:"Extra",l:(LANG==="id"?"Extra Manis":"Extra Sweet")},
+      ],
+      false
+    );
+    body.appendChild(wrap);
+  }
+
+  if (item.coffee && !item.no_sugar_opt) {
+    const wrap = document.createElement("div");
+    wrap.className = "mb-4";
+    wrap.innerHTML = `<p class="text-xs font-bold uppercase tracking-wide mb-2" style="color:var(--accent)">${LANG==="id"?"Tambahan Espresso":"Extra Espresso"}</p><label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="extra-shot" class="accent-teal-600 w-4 h-4" onchange="modalOptions.extra_shot=this.checked;updateModalPrice()"/><span>Extra Shot Espresso <span class="price-text">+${fmt(10000)}</span></span></label>`;
+    body.appendChild(wrap);
+  }
+
+  if (item.extra_rice) {
+    const wrap = document.createElement("div");
+    wrap.className = "mb-4";
+    wrap.innerHTML = `<p class="text-xs font-bold uppercase tracking-wide mb-2" style="color:var(--accent)">${LANG==="id"?"Tambahan":"Add-on"}</p><label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" id="extra-rice" class="accent-teal-600 w-4 h-4" onchange="modalOptions.extra_rice=this.checked;updateModalPrice()"/><span>${LANG==="id"?"Tambah Nasi Putih":"Extra White Rice"} <span class="price-text">+${fmt(10000)}</span></span></label>`;
+    body.appendChild(wrap);
+  }
+
+  const allergens = getAllergens(item.name);
+  if (allergens.length > 0) {
+    const wrap = document.createElement("div");
+    wrap.className = "rounded-xl p-3 mt-2 text-xs";
+    wrap.style.background = "#fff9e6";
+    wrap.style.border = "1px solid #ffc107";
+    wrap.innerHTML = `<p class="font-bold mb-1" style="color:#856404">⚠️ ${LANG==="id"?"Info Alergen":"Allergen Info"}</p><p style="color:#856404">${LANG==="id"?"Mengandung:":"Contains:"} ${allergens.map(function(a){return L(a);}).join(", ")}</p>`;
+    body.appendChild(wrap);
+  }
+
+  document.getElementById("modal-qty").textContent = "1";
+  const modal = document.getElementById("option-modal");
+  modal.classList.remove("hidden");
+  modal.style.display = "flex";
+  lucide.createIcons();
+}
+
+function buildRadioGroup(label, name, options, required) {
+  const wrap = document.createElement("div");
+  wrap.className = "mb-4";
+  const lbl = document.createElement("p");
+  lbl.className = "text-xs font-bold uppercase tracking-wide mb-2";
+  lbl.style.color = "var(--accent)";
+  lbl.textContent = label;
+  wrap.appendChild(lbl);
+  const row = document.createElement("div");
+  row.className = "flex flex-wrap gap-2";
+  options.forEach(function(opt, i) {
+    const uid = "opt_" + name + "_" + i + "_" + Date.now();
+    const inp = document.createElement("input");
+    inp.type = "radio";
+    inp.name = "modal_" + name;
+    inp.value = opt.v;
+    inp.id = uid;
+    inp.className = "opt-radio";
+    (function(val) {
+      inp.onchange = function() { modalOptions[name] = val; updateModalPrice(); };
+    })(opt.v);
+    const lbl2 = document.createElement("label");
+    lbl2.htmlFor = uid;
+    lbl2.className = "opt-label";
+    lbl2.textContent = opt.l;
+    row.appendChild(inp);
+    row.appendChild(lbl2);
+  });
+  wrap.appendChild(row);
+  return wrap;
+}
+
+function updateModalPrice() {
+  let p = modalItem ? modalItem.price : 0;
+  if (modalOptions.extra_shot) p += 10000;
+  if (modalOptions.extra_rice) p += 10000;
+  document.getElementById("modal-price").textContent = fmt(p * modalQty);
+}
+
+function changeModalQty(d) {
+  modalQty = Math.max(1, modalQty + d);
+  document.getElementById("modal-qty").textContent = modalQty;
+  updateModalPrice();
+}
+
+function closeModal() {
+  const modal = document.getElementById("option-modal");
+  modal.classList.add("hidden");
+  modal.style.display = "none";
+  modalItem = null;
+}
+
+function addToCartFromModal() {
+  if (!modalItem) return;
+  if (modalItem.hotice && !modalOptions.temp) {
+    showToast(LANG==="id"?"Pilih suhu terlebih dahulu!":"Please choose Hot or Iced!", true);
+    return;
+  }
+
+  let price = modalItem.price;
+  let optParts = [];
+  if (modalOptions.temp) optParts.push(modalOptions.temp);
+  if (modalOptions.sugar) optParts.push((LANG==="id"?"Gula: ":"Sugar: ") + modalOptions.sugar);
+  if (modalOptions.extra_shot) { price += 10000; optParts.push("+Extra Shot"); }
+  if (modalOptions.extra_rice) { price += 10000; optParts.push(LANG==="id"?"+Nasi Putih":"+White Rice"); }
+
+  const optStr = optParts.join(" | ");
+
+  const existing = cart.find(function(c) { return c.name === modalItem.name && c.optStr === optStr; });
+  if (existing) {
+    existing.qty += modalQty;
+    existing.price = price;
+  } else {
+    cart.push({ id: ++cartIdCounter, name: modalItem.name, price: price, qty: modalQty, optStr: optStr });
+  }
+
+  closeModal();
+  updateCartUI();
+  showToast(modalItem.name + " " + (LANG==="id"?"ditambahkan!":"added!"));
+}
+
+function quickAdd(item) {
+  const existing = cart.find(function(c) { return c.name === item.name && !c.optStr; });
+  if (existing) { existing.qty++; }
+  else { cart.push({ id: ++cartIdCounter, name: item.name, price: item.price, qty: 1, optStr:"" }); }
+  updateCartUI();
+  showToast(item.name + " added!");
+}
+
+// ─── CART UI ──────────────────────────────────────────────────────────────
+function updateCartUI() {
+  const total = cart.reduce(function(s, c) { return s + c.price * c.qty; }, 0);
+  const count = cart.reduce(function(s, c) { return s + c.qty; }, 0);
+
+  const badge = document.getElementById("cart-badge");
+  if (count > 0) {
+    badge.textContent = count > 99 ? "99+" : count;
+    badge.classList.remove("hidden");
+    badge.classList.add("badge-pop");
+    setTimeout(function() { badge.classList.remove("badge-pop"); }, 300);
+  } else {
+    badge.classList.add("hidden");
+  }
+
+  document.getElementById("cart-total").textContent = fmt(total);
+
+  const container = document.getElementById("cart-items");
+  const empty = document.getElementById("cart-empty");
+  if (cart.length === 0) {
+    empty.style.display = "";
+    container.querySelectorAll(".cart-row").forEach(function(e) { e.remove(); });
+  } else {
+    empty.style.display = "none";
+    const existing = new Map([...container.querySelectorAll(".cart-row")].map(function(e) { return [parseInt(e.dataset.cartId), e]; }));
+    let prevEl = empty;
+    cart.forEach(function(item) {
+      if (existing.has(item.id)) {
+        const el = existing.get(item.id);
+        el.querySelector(".cart-item-qty").textContent = item.qty;
+        el.querySelector(".cart-item-total").textContent = fmt(item.price * item.qty);
+        existing.delete(item.id);
+        prevEl = el;
+      } else {
+        const el = document.createElement("div");
+        el.className = "cart-row bg-gray-50 rounded-xl p-3 border border-gray-100";
+        el.dataset.cartId = item.id;
+        el.innerHTML = `<div class="flex justify-between items-start gap-2"><div class="flex-1 min-w-0"><p class="text-sm font-semibold truncate" style="color:var(--text)">${item.name}</p>${item.optStr ? `<p class="text-xs text-gray-400 mt-0.5">${item.optStr}</p>` : ""}</div><button class="remove-btn text-gray-300 hover:text-red-400 flex-shrink-0"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button></div><div class="flex items-center justify-between mt-2"><div class="flex items-center gap-2"><div class="qty-btn minus-btn">−</div><span class="cart-item-qty font-bold text-sm w-5 text-center">${item.qty}</span><div class="qty-btn plus-btn">+</div></div><span class="cart-item-total price-text text-sm">${fmt(item.price * item.qty)}</span></div>`;
+        (function(cartItem) {
+          el.querySelector(".remove-btn").addEventListener("click", function() { removeFromCart(cartItem.id); });
+          el.querySelector(".minus-btn").addEventListener("click", function() { changeCartQty(cartItem.id, -1); });
+          el.querySelector(".plus-btn").addEventListener("click", function() { changeCartQty(cartItem.id, 1); });
+        })(item);
+        prevEl.after(el);
+        prevEl = el;
+        existing.delete(item.id);
+      }
+    });
+    existing.forEach(function(el) { el.remove(); });
+  }
+  lucide.createIcons();
+}
+
+function changeCartQty(id, d) {
+  const item = cart.find(function(c) { return c.id === id; });
+  if (!item) return;
+  item.qty = Math.max(0, item.qty + d);
+  if (item.qty === 0) cart = cart.filter(function(c) { return c.id !== id; });
+  updateCartUI();
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(function(c) { return c.id !== id; });
+  updateCartUI();
+}
+
+// ─── TOGGLE CART ──────────────────────────────────────────────────────────
+function toggleCart() {
+  cartOpen = !cartOpen;
+  const panel = document.getElementById("cart-panel");
+  const overlay = document.getElementById("cart-overlay");
+  if (cartOpen) {
+    overlay.classList.remove("hidden");
+    panel.classList.remove("hidden-panel");
+    panel.classList.add("visible-panel");
+  } else {
+    overlay.classList.add("hidden");
+    panel.classList.remove("visible-panel");
+    panel.classList.add("hidden-panel");
+  }
+  lucide.createIcons();
+}
+
+// ─── CHECKOUT ─────────────────────────────────────────────────────────────
+function checkout() {
+  const guestName = document.getElementById("guest-name").value.trim();
+  const locDetail = document.getElementById("location-detail").value.trim();
+  const locType = document.querySelector('input[name="location_type"]:checked');
+  const notes = document.getElementById("order-notes").value.trim();
+
+  if (!guestName) {
+    showToast(LANG==="id"?"Isi nama tamu dahulu!":"Please enter your name!", true);
+    document.getElementById("guest-name").focus();
+    return;
+  }
+  if (!locType) {
+    showToast(LANG==="id"?"Pilih lokasi pesanan!":"Please select table or room!", true);
+    return;
+  }
+  if (!locDetail) {
+    showToast(LANG==="id"?"Isi nomor meja / kamar!":"Please enter table or room number!", true);
+    document.getElementById("location-detail").focus();
+    return;
+  }
+  if (cart.length === 0) {
+    showToast(LANG==="id"?"Keranjang masih kosong!":"Cart is empty!", true);
+    return;
+  }
+
+  const locLabel = locType.value === "table" ? (LANG==="id"?"Meja":"Table") : (LANG==="id"?"Kamar":"Room");
+  let msg = "🦊 *FOX DELI ORDER*\n";
+  msg += "👤 " + (LANG==="id"?"Nama":"Name") + ": " + guestName + "\n";
+  msg += "📍 " + locLabel + ": " + locDetail + "\n";
+  msg += "\n*🛒 " + (LANG==="id"?"Pesanan":"Order") + ":*\n";
+  cart.forEach(function(item, i) {
+    msg += (i+1) + ". " + item.name;
+    if (item.optStr) msg += " (" + item.optStr + ")";
+    msg += " x" + item.qty + " — " + fmt(item.price * item.qty) + "\n";
+  });
+  const total = cart.reduce(function(s, c) { return s + c.price * c.qty; }, 0);
+  msg += "\n💰 *Total: " + fmt(total) + "*";
+  if (notes) msg += "\n\n📝 " + (LANG==="id"?"Catatan":"Notes") + ": " + notes;
+  msg += "\n\n_" + (LANG==="id"?"Terima kasih sudah memesan di FOX DELI! 🦊":"Thank you for ordering at FOX DELI! 🦊") + "_";
+
+  const waNum = WA_NUMBER || (window.elementSdk && window.elementSdk.config ? window.elementSdk.config.whatsapp_number : "") || "";
+  const url = "https://wa.me/" + waNum + "?text=" + encodeURIComponent(msg);
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, isError) {
+  isError = isError || false;
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.background = isError ? "#dc2626" : "#1a2e35";
+  t.style.opacity = "1";
+  t.style.transform = "translateX(-50%) translateY(0)";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() {
+    t.style.opacity = "0";
+    t.style.transform = "translateX(-50%) translateY(10px)";
+  }, 2500);
+}
+
+// ─── LOCATION UI ──────────────────────────────────────────────────────────
+function updateLocationUI() {
+  const tableWrap = document.getElementById("loc-table-wrap");
+  const roomWrap = document.getElementById("loc-room-wrap");
+  const tableChecked = document.getElementById("loc-table").checked;
+  const roomChecked = document.getElementById("loc-room").checked;
+  tableWrap.style.borderColor = tableChecked ? "var(--accent)" : "#e5e7eb";
+  roomWrap.style.borderColor = roomChecked ? "var(--accent)" : "#e5e7eb";
+  const detail = document.getElementById("location-detail");
+  detail.placeholder = tableChecked
+    ? (LANG==="id"?"Nomor meja (cth. Meja 5)":"Table number (e.g. Table 5)")
+    : (LANG==="id"?"Nomor kamar (cth. Kamar 302)":"Room number (e.g. Room 302)");
+}
+
+// ─── ELEMENT SDK ──────────────────────────────────────────────────────────
+const defaultConfig = {
+  restaurant_name: "FOX DELI",
+  restaurant_tagline: "Taste the Experience",
+  whatsapp_number: "",
+  footer_text: "Thank you for dining with us!",
+  bg_color: "#abe0e4",
+  surface_color: "#ffffff",
+  text_color: "#1a2e35",
+  accent_color: "#2a7f8a",
+  action_color: "#e05c2a",
+};
+
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig: defaultConfig,
+    onConfigChange: async function(config) {
+      const name = config.restaurant_name || defaultConfig.restaurant_name;
+      const tagline = config.restaurant_tagline || defaultConfig.restaurant_tagline;
+      document.getElementById("hero-name").textContent = name;
+      document.getElementById("hero-tagline").textContent = tagline;
+      document.getElementById("header-name").textContent = name;
+      document.getElementById("header-tagline").textContent = tagline;
+      document.title = name + " – Digital Menu";
+
+      document.documentElement.style.setProperty("--bg", config.bg_color || defaultConfig.bg_color);
+      document.documentElement.style.setProperty("--surface", config.surface_color || defaultConfig.surface_color);
+      document.documentElement.style.setProperty("--text", config.text_color || defaultConfig.text_color);
+      document.documentElement.style.setProperty("--accent", config.accent_color || defaultConfig.accent_color);
+      document.documentElement.style.setProperty("--action", config.action_color || defaultConfig.action_color);
+    },
+    mapToCapabilities: function(config) {
+      return {
+        recolorables: [
+          { get: function() { return config.bg_color || defaultConfig.bg_color; }, set: function(v) { config.bg_color = v; window.elementSdk.setConfig({ bg_color: v }); } },
+          { get: function() { return config.surface_color || defaultConfig.surface_color; }, set: function(v) { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+          { get: function() { return config.text_color || defaultConfig.text_color; }, set: function(v) { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+          { get: function() { return config.accent_color || defaultConfig.accent_color; }, set: function(v) { config.accent_color = v; window.elementSdk.setConfig({ accent_color: v }); } },
+          { get: function() { return config.action_color || defaultConfig.action_color; }, set: function(v) { config.action_color = v; window.elementSdk.setConfig({ action_color: v }); } },
+        ],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined,
+      };
+    },
+    mapToEditPanelValues: function(config) {
+      return new Map([
+        ["restaurant_name", config.restaurant_name || defaultConfig.restaurant_name],
+        ["restaurant_tagline", config.restaurant_tagline || defaultConfig.restaurant_tagline],
+        ["whatsapp_number", config.whatsapp_number || defaultConfig.whatsapp_number],
+        ["footer_text", config.footer_text || defaultConfig.footer_text],
+      ]);
+    },
+  });
+}
+
+// ─── BOOTSTRAP ────────────────────────────────────────────────────────────
+init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ed2c4b8213e821d',t:'MTc3NjMzODA4OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
