@@ -573,7 +573,7 @@
           { name: "Nasi Tuna Cabe Ijo", desc: "Savory cubes of fresh tuna combined with the spiciness of authentic green chili sauce. The addition of lime leaves and basil leaves provides a fresh, fragrant aroma while eliminating any fishy smell. Served with warm rice and stir-fried vegetables.", price: 73000, extra_rice: true, spicy: 3 },
           { name: "Baso Sapi Bihun", desc: "A combination of thick, chewy beef meatballs and soft rice noodles, topped with a savory, spicy broth rich in spices. Garnished with fried onions and a signature spicy chili sauce that will keep you coming back for more.", price: 63000, extra_rice: true, spicy: 1 },
           { name: "Nasi Soto Ayam", desc: "Authentic chicken soup with savory chicken broth and aromatic spices served with warm rice. Characterized by koya powder and fried onions, it has a creamy and savory texture that is addictive.", price: 63000, extra_rice: true, spicy: 1 },
-          { name: "Indomie Telur", desc: "Choice of Indomie soup or fried noodles with egg", price: 35000, extra_rice: false, spicy: 1 },
+          { name: "Indomie Telur", desc: "Choice of Indomie soup or fried noodles with egg", price: 35000, extra_rice: true, extra_egg: true, spicy: 1 },
         ]
       },
       {
@@ -597,6 +597,7 @@
           { name: "Chitato Sapi Bumbu", desc: "Chips with spicy beef flavor", price: 20000, spicy: 2 },
           { name: "Chitato Salmon Teriyaki", desc: "Chips with unique salmon teriyaki flavor", price: 20000 },
           { name: "FOX Platter", desc: "Complete platter with assorted snacks", price: 88000 },
+          { name: "FOX Toast", desc: "Perfectly grilled artisan toast with a golden crust and a soft, fluffy bite. A classic comfort food elevated the FOX way.", price: 35000 },
           { name: "Chicken Wings", desc: "Crispy fried chicken wings with sauce", price: 48000 },
           { name: "French Fries", desc: "Crispy french fries with salt", price: 38000 },
           { name: "Potato Wedges", desc: "Thick crispy fried potato wedges", price: 38000 },
@@ -777,7 +778,7 @@
 
         cat.items.forEach(function (item) {
           const allergens = getAllergens(item.name);
-          const hasOptions = item.hotice || item.coffee || item.sugar || item.extra_rice;
+          const hasOptions = item.hotice || item.coffee || item.sugar || item.extra_rice || item.extra_egg;
 
           const card = document.createElement("div");
           card.className = "menu-card bg-white rounded-2xl overflow-hidden shadow-sm border border-white cursor-pointer";
@@ -867,6 +868,13 @@
         wrap.innerHTML = "<p class=\"text-xs font-bold uppercase tracking-wide mb-2\" style=\"color:var(--accent)\">" + $("addOn") + "</p><label class=\"flex items-center gap-2 text-sm cursor-pointer\"><input type=\"checkbox\" id=\"extra-rice\" class=\"accent-teal-600 w-4 h-4\" onchange=\"modalOptions.extra_rice=this.checked;updateModalPrice()\"/><span>" + $("extraWhiteRice") + " <span class=\"price-text\">+" + fmt(10000) + "</span></span></label>";
         body.appendChild(wrap);
       }
+       if (item.extra_egg) {
+        const wrap = document.createElement("div");
+        wrap.className = "mb-4";
+        wrap.innerHTML = "<p class=\"text-xs font-bold uppercase tracking-wide mb-2\" style=\"color:var(--accent)\">" + $("addOn") + "</p><label class=\"flex items-center gap-2 text-sm cursor-pointer\"><input type=\"checkbox\" id=\"extra-egg\" class=\"accent-teal-600 w-4 h-4\" onchange=\"modalOptions.extra_egg=this.checked;updateModalPrice()\"/><span>" + $("extraEgg") + " <span class=\"price-text\">+" + fmt(10000) + "</span></span></label>";
+        body.appendChild(wrap);
+      }
+
 
       const allergens = getAllergens(item.name);
       if (allergens.length > 0) {
