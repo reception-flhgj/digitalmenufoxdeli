@@ -929,6 +929,7 @@
       let p = modalItem ? modalItem.price : 0;
       if (modalOptions.extra_shot) p += 10000;
       if (modalOptions.extra_rice) p += 10000;
+      if (modalOptions.extra_egg) p += 10000;
       document.getElementById("modal-price").textContent = fmt(p * modalQty);
     }
 
@@ -958,6 +959,7 @@
       if (modalOptions.sugar) optParts.push("Sugar: " + modalOptions.sugar);
       if (modalOptions.extra_shot) { price += 10000; optParts.push("+Extra Shot"); }
       if (modalOptions.extra_rice) { price += 10000; optParts.push("+White Rice"); }
+      if (modalOptions.extra_egg) { price += 10000; optParts.push("+Egg"); }
 
       const optStr = optParts.join(" | ");
 
